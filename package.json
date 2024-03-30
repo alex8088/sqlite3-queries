@@ -1,0 +1,55 @@
+{
+  "name": "sqlite3-queries",
+  "version": "0.0.0",
+  "description": "A type-safe and promise-based query client for node sqlite3.",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "author": "Alex Wei <https://github.com/alex8088>",
+  "license": "MIT",
+  "homepage": "https://github.com/alex8088/sqlite3-queries#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex8088/sqlite3-queries.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alex8088/sqlite3-queries/issues"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint --ext .js,.cjs,.mjs,.ts,.cts,.mts src/**",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run lint && rollup -c rollup.config.ts --configPlugin typescript",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "sqlite3": "^5.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^18.19.26",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "prettier": "^3.2.5",
+    "rollup": "^4.13.0",
+    "rollup-plugin-dts": "^6.1.0",
+    "sqlite3": "^5.1.7",
+    "typescript": "^5.4.3",
+    "vitest": "^1.4.0"
+  }
+}
