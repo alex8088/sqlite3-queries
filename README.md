@@ -15,6 +15,8 @@ npm i sqlite3 sqlite3-queries
 - Open an anonymous in-memory database
 
 ```ts
+import { Dbo } from 'sqlite3-queries'
+
 const dbo = new Dbo()
 
 await dbo.open()
@@ -24,6 +26,8 @@ await dbo.open()
 
 ```ts
 import path from 'node:path'
+import { Dbo } from 'sqlite3-queries'
+
 const dbo = new Dbo(path.join(__dirname, '/tmp/database.db'))
 
 await dbo.open()
@@ -32,6 +36,7 @@ await dbo.open()
 - Open a verbose database for debugging
 
 ```ts
+import { Dbo } from 'sqlite3-queries'
 const dbo = new Dbo(':memory:', true)
 
 await dbo.open()
