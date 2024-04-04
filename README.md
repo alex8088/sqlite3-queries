@@ -164,6 +164,16 @@ Escape the `/`, `%`, and `_` characters of query parameters.
 escape(str: string): string
 ```
 
+### toSqlQueryParam
+
+Convert object parameters to sql query parameters. All object keys will be prefixed with `$`.
+
+#### Type Signature:
+
+```ts
+toSqlQueryParam(param: Record<string, string | number>): SqlQueryParam
+```
+
 ## Using Sqlite3 APIs
 
 You can use all the original APIs of Sqlite3.

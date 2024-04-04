@@ -116,6 +116,18 @@ export class Dbo {
   }
 
   /**
+   * Convert object parameters to sql query parameters. All object keys
+   * will be prefixed with `$`.
+   */
+  toSqlQueryParam(param: Record<string, string | number>): SqlQueryParam {
+    const _param = {}
+    Object.keys(param).forEach((k) => {
+      _param[`$${k}`] = param[k]
+    })
+    return _param
+  }
+
+  /**
    * Runs all SQL queries in the supplied string.
    */
   exec(sql: string): Promise<void> {

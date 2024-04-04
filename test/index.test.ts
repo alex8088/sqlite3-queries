@@ -21,6 +21,11 @@ test('escape api test', async () => {
   expect(dbo.escape('_')).toBe('/_')
 })
 
+test('toSqlQueryParam api test', async () => {
+  const result = { $id: 0, $name: 'Evie Le' }
+  expect(dbo.toSqlQueryParam({ id: 0, name: 'Evie Le' })).toStrictEqual(result)
+})
+
 describe.sequential('run api test', () => {
   it('create a table', async () => {
     const sql = `CREATE TABLE IF NOT EXISTS user (id STRING PRIMARY KEY, name STRING)`
