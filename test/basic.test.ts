@@ -1,13 +1,20 @@
-import { beforeAll, afterAll, test, describe, it, expect } from 'vitest'
+import fs from 'node:fs'
+import path from 'node:path'
+import { beforeAll, afterAll, describe, it, expect } from 'vitest'
 import { Dbo } from '../src/index'
 
-const dbo = new Dbo()
+const dbPath = path.join(__dirname, 'test.db')
+
+const dbo = new Dbo(dbPath)
 
 beforeAll(async () => {
+  if (fs.existsSync(dbPath)) {
+    fs.unlinkSync(dbPath)
+  }
   await dbo.open()
 })
 
-test('db is open', async () => {
+it('db is open', async () => {
   const result = await dbo.get<{ count: number }>(
     'SELECT count(*) AS count FROM sqlite_master'
   )
@@ -15,13 +22,13 @@ test('db is open', async () => {
   expect(result.count).toBe(0)
 })
 
-test('escape api test', async () => {
+it('escape api test', async () => {
   expect(dbo.escape('/')).toBe('//')
   expect(dbo.escape('%')).toBe('/%')
   expect(dbo.escape('_')).toBe('/_')
 })
 
-test('toSqlQueryParam api test', async () => {
+it('toSqlQueryParam api test', async () => {
   const result = { $id: 0, $name: 'Evie Le' }
   expect(dbo.toSqlQueryParam({ id: 0, name: 'Evie Le' })).toStrictEqual(result)
 })
@@ -52,24 +59,20 @@ describe.sequential('run api test', () => {
   })
 })
 
-describe('get api test', () => {
-  it('get a row', async () => {
-    const sql = `SELECT * FROM user WHERE id=?`
-    const result = await dbo.get<{ id: number; name: string }>(sql, [0])
-    expect(result).toStrictEqual({ id: 0, name: 'Evie Le' })
-  })
+it('get api test', async () => {
+  const sql = `SELECT * FROM user WHERE id=?`
+  const result = await dbo.get<{ id: number; name: string }>(sql, [0])
+  expect(result).toStrictEqual({ id: 0, name: 'Evie Le' })
 })
 
-describe('all api test', () => {
-  it('get all rows', async () => {
-    await dbo.run(`INSERT INTO user (id, name) VALUES ($id, $name)`, {
-      $id: 1,
-      $name: 'Oliver'
-    })
-    const sql = `SELECT * FROM user`
-    const result = await dbo.all<{ id: number; name: string }>(sql)
-    expect(result.length).toBe(2)
+it('all api test', async () => {
+  await dbo.run(`INSERT INTO user (id, name) VALUES ($id, $name)`, {
+    $id: 1,
+    $name: 'Oliver'
   })
+  const sql = `SELECT * FROM user`
+  const result = await dbo.all<{ id: number; name: string }>(sql)
+  expect(result.length).toBe(2)
 })
 
 afterAll(async () => {
