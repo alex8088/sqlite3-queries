@@ -75,6 +75,22 @@ it('all api test', async () => {
   expect(result.length).toBe(2)
 })
 
+it('transaction api test', async () => {
+  const len = 500
+  await dbo.transaction(() => {
+    dbo.prepare('INSERT INTO user (id, name) VALUES ($id, $name)', (stmt) => {
+      Array(len)
+        .fill(0)
+        .map((_, i) => ({ $id: 2 + i, $name: `Jordan${i}` }))
+        .forEach((p) => stmt.run(p))
+    })
+  })
+  const result = await dbo.get<{ count: number }>(
+    'SELECT count(*) AS count FROM user'
+  )
+  expect(result.count).toBe(len + 2)
+})
+
 afterAll(async () => {
   await dbo.close()
 })

@@ -154,6 +154,29 @@ Prepares the SQL statement and run the callback with the statement object.
 prepare(sql: string, runCallback: (stmt: Statement) => void): void
 ```
 
+### Transaction
+
+Start a transaction explicitly. A transaction is the propagation of one or more changes to the database. For example, if you are creating, updating, or deleting a record from the table, then you are performing transaction on the table. It is important to control transactions to ensure data integrity and to handle database errors.
+
+#### Type Signature:
+
+```ts
+transaction(transactions: () => void): Promise<void>
+```
+
+#### Example:
+
+```ts
+await dbo.transaction(() => {
+  dbo.prepare('INSERT INTO user (id, name) VALUES ($id, $name)', (stmt) => {
+    ;[
+      { $id: 2, $name: 'Jordan' },
+      { $id: 3, $name: `Ameer` }
+    ].forEach((p) => stmt.run(p))
+  })
+})
+```
+
 ### LoadExtension
 
 Loads a compiled SQLite extension into the database connection object.

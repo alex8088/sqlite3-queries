@@ -210,4 +210,33 @@ export class Dbo {
       stmt.finalize()
     }
   }
+
+  /**
+   * Start a transaction explicitly. A transaction is the propagation of one
+   * or more changes to the database. For example, if you are creating,
+   * updating, or deleting a record from the table, then you are performing
+   * transaction on the table. It is important to control transactions to
+   * ensure data integrity and to handle database errors.
+   */
+  async transaction(transactions: () => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (this.db) {
+        this.db.serialize(() => {
+          this.db!.run('BEGIN')
+
+          transactions()
+
+          this.db!.run('COMMIT', (error) => {
+            if (error) {
+              return reject(error)
+            }
+
+            return resolve()
+          })
+        })
+      } else {
+        reject(SqliteError.NOT_OPEN)
+      }
+    })
+  }
 }
