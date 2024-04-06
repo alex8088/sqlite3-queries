@@ -103,7 +103,14 @@ export class Dbo {
    */
   async close(): Promise<void> {
     return toPromise((cb) =>
-      this.db ? this.db.close(cb) : cb(SqliteError.NOT_OPEN)
+      this.db
+        ? this.db.close((err) => {
+            if (!err) {
+              this.db = undefined
+            }
+            cb(err)
+          })
+        : cb(SqliteError.NOT_OPEN)
     )
   }
 
