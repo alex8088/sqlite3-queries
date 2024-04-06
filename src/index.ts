@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import sqlite3, { Database, verbose } from 'sqlite3'
+import sqlite3, { Database, Statement, verbose } from 'sqlite3'
 
 type SqliteErrorCallback = (err: Error | null) => void
 
@@ -196,5 +196,18 @@ export class Dbo {
           })
         : reject(SqliteError.NOT_OPEN)
     })
+  }
+
+  /**
+   * Prepares the SQL statement and run the callback with the statement object.
+   */
+  prepare(sql: string, runCallback: (stmt: Statement) => void): void {
+    if (this.db) {
+      const stmt = this.db.prepare(sql)
+
+      runCallback(stmt)
+
+      stmt.finalize()
+    }
   }
 }

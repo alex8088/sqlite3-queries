@@ -144,6 +144,16 @@ Runs all SQL queries in the supplied string.
 exec(sql: string): Promise<void>
 ```
 
+### Prepare
+
+Prepares the SQL statement and run the callback with the statement object.
+
+#### Type Signature:
+
+```ts
+prepare(sql: string, runCallback: (stmt: Statement) => void): void
+```
+
 ### LoadExtension
 
 Loads a compiled SQLite extension into the database connection object.
