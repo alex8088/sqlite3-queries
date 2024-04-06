@@ -187,6 +187,16 @@ Loads a compiled SQLite extension into the database connection object.
 loadExtension(fileName: string): Promise<void>
 ```
 
+### Vacuum
+
+Rebuild the database file, repacking it into a minimal amount of disk space.
+
+#### Type Signature:
+
+```ts
+vacuum(): Promise<void>
+```
+
 ### Escape
 
 Escape the `/`, `%`, and `_` characters of query parameters.

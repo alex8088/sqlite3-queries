@@ -109,6 +109,13 @@ export class Dbo {
   }
 
   /**
+   * Rebuild the database file, repacking it into a minimal amount of disk space.
+   */
+  async vacuum(): Promise<void> {
+    return this.exec('VACUUM')
+  }
+
+  /**
    * Escape the `/`, `%`, and  `_` characters of query parameters.
    */
   escape(str: string): string {

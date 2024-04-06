@@ -91,6 +91,13 @@ it('transaction api test', async () => {
   expect(result.count).toBe(len + 2)
 })
 
+it('vacuum api test', async () => {
+  const stat = fs.statSync(dbo.fileName)
+  await dbo.run('DELETE FROM user')
+  await dbo.vacuum()
+  expect(fs.statSync(dbo.fileName).size).toBeLessThan(stat.size)
+})
+
 afterAll(async () => {
   await dbo.close()
 })
