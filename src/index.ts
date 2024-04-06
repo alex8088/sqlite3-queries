@@ -116,6 +116,16 @@ export class Dbo {
   }
 
   /**
+   * Runs a self-check on the database structure. If no errors are found, the text
+   * value `ok` will be returned.
+   */
+  async checkIntegrity(): Promise<string> {
+    return (
+      await this.get<{ integrity_check: string }>('PRAGMA integrity_check')
+    ).integrity_check
+  }
+
+  /**
    * Escape the `/`, `%`, and  `_` characters of query parameters.
    */
   escape(str: string): string {

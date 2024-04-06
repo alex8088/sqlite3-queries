@@ -197,6 +197,16 @@ Rebuild the database file, repacking it into a minimal amount of disk space.
 vacuum(): Promise<void>
 ```
 
+### CheckIntegrity
+
+Runs a self-check on the database structure. If no errors are found, the text value `ok` will be returned.
+
+#### Type Signature:
+
+```ts
+checkIntegrity(): Promise<string>
+```
+
 ### Escape
 
 Escape the `/`, `%`, and `_` characters of query parameters.
