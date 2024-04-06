@@ -63,6 +63,8 @@ export class Dbo {
    */
   readonly name: string
 
+  static readonly IN_MEMORY_PATH = ':memory:'
+
   /**
    * @param fileName Valid values are filenames, ":memory:" for an anonymous in-memory
    * database and an empty string for an anonymous disk-based database. Anonymous databases
@@ -113,6 +115,13 @@ export class Dbo {
     return toPromise((cb) =>
       this.db ? this.db.loadExtension(fileName, cb) : cb(SqliteError.NOT_OPEN)
     )
+  }
+
+  /**
+   * Database is in-memory.
+   */
+  isInMemory(): boolean {
+    return this.fileName === Dbo.IN_MEMORY_PATH
   }
 
   /**

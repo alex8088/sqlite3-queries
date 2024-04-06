@@ -207,6 +207,16 @@ Runs a self-check on the database structure. If no errors are found, the text va
 checkIntegrity(): Promise<string>
 ```
 
+### IsInMemory
+
+Database is in-memory.
+
+#### Type Signature:
+
+```ts
+inMemory(): boolean
+```
+
 ### Escape
 
 Escape the `/`, `%`, and `_` characters of query parameters.
