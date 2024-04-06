@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+import { basename } from 'node:path'
 import sqlite3, { Database, Statement, verbose } from 'sqlite3'
 
 type SqliteErrorCallback = (err: Error | null) => void
@@ -59,6 +59,11 @@ export class Dbo {
   db?: Database
 
   /**
+   * Database name
+   */
+  readonly name: string
+
+  /**
    * @param fileName Valid values are filenames, ":memory:" for an anonymous in-memory
    * database and an empty string for an anonymous disk-based database. Anonymous databases
    * are not persisted and when closing the database handle, their contents are lost.
@@ -69,9 +74,11 @@ export class Dbo {
    * Default: false
    */
   constructor(
-    public fileName: string | ':memory:' = ':memory:',
+    public readonly fileName: string | ':memory:' = ':memory:',
     public verbose = false
-  ) {}
+  ) {
+    this.name = basename(this.fileName)
+  }
 
   /**
    * Open the database

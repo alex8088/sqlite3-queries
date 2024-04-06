@@ -22,6 +22,10 @@ it('db is open', async () => {
   expect(result.count).toBe(0)
 })
 
+it('db name property test', async () => {
+  expect(dbo.name).toEqual('test.db')
+})
+
 it('escape api test', async () => {
   expect(dbo.escape('/')).toBe('//')
   expect(dbo.escape('%')).toBe('/%')
