@@ -91,8 +91,8 @@ export class Dbo {
   /**
    * Open the database
    * @param mode One or more of `Dbo.OPEN_READONLY`, `Dbo.OPEN_READWRITE`, `Dbo.OPEN_CREATE`,
-   *   `Dbo.OPEN_FULLMUTEX`, `Dbo.OPEN_URI`, `Dbo.OPEN_SHAREDCACHE`, `Dbo.OPEN_PRIVATECACHE`.
-   *   Default: `OPEN_READWRITE | OPEN_CREATE | OPEN_FULLMUTEX`.
+   * `Dbo.OPEN_FULLMUTEX`, `Dbo.OPEN_URI`, `Dbo.OPEN_SHAREDCACHE`, `Dbo.OPEN_PRIVATECACHE`.
+   * Default: `OPEN_READWRITE | OPEN_CREATE | OPEN_FULLMUTEX`.
    */
   async open(
     mode: number = Dbo.OPEN_READWRITE | Dbo.OPEN_CREATE | Dbo.OPEN_FULLMUTEX
