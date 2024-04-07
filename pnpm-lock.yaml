@@ -41,6 +41,9 @@ devDependencies:
   rollup-plugin-dts:
     specifier: ^6.1.0
     version: 6.1.0(rollup@4.13.2)(typescript@5.4.3)
+  rollup-plugin-rm:
+    specifier: ^1.0.1
+    version: 1.0.1(rollup@4.13.2)
   sqlite3:
     specifier: ^5.1.7
     version: 5.1.7
@@ -2451,6 +2454,14 @@ packages:
       typescript: 5.4.3
     optionalDependencies:
       '@babel/code-frame': 7.24.2
+    dev: true
+
+  /rollup-plugin-rm@1.0.1(rollup@4.13.2):
+    resolution: {integrity: sha512-CUPHbnKIA+/YP1bLGxhSAtXVdh+0BkgdU+irIJ7PJWrHzZysuC59MwwcKp1sv+EkoZXnx6PZaN4CqnE+djyUig==}
+    peerDependencies:
+      rollup: ^3.0.0||^4.0.0
+    dependencies:
+      rollup: 4.13.2
     dev: true
 
   /rollup@4.13.2:
