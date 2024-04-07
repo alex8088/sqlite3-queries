@@ -53,6 +53,8 @@ export class Dbo {
   static OPEN_SHAREDCACHE = sqlite3.OPEN_SHAREDCACHE
   static OPEN_PRIVATECACHE = sqlite3.OPEN_PRIVATECACHE
 
+  static readonly IN_MEMORY_PATH = ':memory:'
+
   /**
    * Sqlite3 database.
    */
@@ -63,7 +65,10 @@ export class Dbo {
    */
   readonly name: string
 
-  static readonly IN_MEMORY_PATH = ':memory:'
+  /**
+   * Database is in-memory.
+   */
+  readonly isInMemory: boolean
 
   /**
    * @param fileName Valid values are filenames, ":memory:" for an anonymous in-memory
@@ -80,6 +85,7 @@ export class Dbo {
     public verbose = false
   ) {
     this.name = basename(this.fileName)
+    this.isInMemory = this.fileName === Dbo.IN_MEMORY_PATH
   }
 
   /**
@@ -122,13 +128,6 @@ export class Dbo {
     return toPromise((cb) =>
       this.db ? this.db.loadExtension(fileName, cb) : cb(SqliteError.NOT_OPEN)
     )
-  }
-
-  /**
-   * Database is in-memory.
-   */
-  isInMemory(): boolean {
-    return this.fileName === Dbo.IN_MEMORY_PATH
   }
 
   /**
