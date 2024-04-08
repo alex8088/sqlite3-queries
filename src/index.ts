@@ -186,16 +186,16 @@ export class Dbo {
   }
 
   /**
-   * Runs the SQL query with the specified parameters and returns
-   * a subsequent result row.
+   * Runs the SQL query with the specified parameters and returns a
+   * subsequent result row. If data is not found, `undefined`is returned.
    */
   async get<T extends Record<string, any>>(
     sql: string,
     params: SqlQueryParam | (string | number)[] = []
-  ): Promise<T> {
+  ): Promise<T | undefined> {
     return new Promise((resolve, reject) => {
       this.db
-        ? this.db.get<T>(sql, params, (err, result) => {
+        ? this.db.get<T>(sql, params, (err, result?: T) => {
             if (err) {
               reject(err)
             } else {

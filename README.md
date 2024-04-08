@@ -88,9 +88,9 @@ const result = await dbo.run(sql, { $id: 0, $name: 'Evie Le' })
 
 ### `Get`
 
-- **Type:** `<T extends Record<string, any>>(sql: string, params?: SqlQueryParam | (string | number)[]) => Promise<T>`
+- **Type:** `<T extends Record<string, any>>(sql: string, params?: SqlQueryParam | (string | number)[]) => Promise<T | undefined>`
 
-Runs the SQL query with the specified parameters and returns a subsequent result row.
+Runs the SQL query with the specified parameters and returns a subsequent result row. If data is not found, `undefined`is returned.
 
 Example:
 

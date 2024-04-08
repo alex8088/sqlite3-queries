@@ -19,7 +19,7 @@ it('db is open', async () => {
     'SELECT count(*) AS count FROM sqlite_master'
   )
   expect(dbo.db).toBeDefined()
-  expect(result.count).toBe(0)
+  expect(result?.count).toBe(0)
 })
 
 it('db name property test', async () => {
@@ -45,7 +45,7 @@ describe.sequential('run api test', () => {
       'SELECT count(*) AS count FROM sqlite_master WHERE name=?',
       ['user']
     )
-    expect(result.count).toBe(1)
+    expect(result?.count).toBe(1)
   })
 
   it('insert a row with array parameters', async () => {
@@ -63,10 +63,18 @@ describe.sequential('run api test', () => {
   })
 })
 
-it('get api test', async () => {
+describe('get api test', () => {
   const sql = `SELECT * FROM user WHERE id=?`
-  const result = await dbo.get<{ id: number; name: string }>(sql, [0])
-  expect(result).toStrictEqual({ id: 0, name: 'Evie Le' })
+
+  it('data not found, returns undefined', async () => {
+    const result = await dbo.get<{ id: number; name: string }>(sql, [-1])
+    expect(result).toBeUndefined()
+  })
+
+  it('data found, returns object', async () => {
+    const result = await dbo.get<{ id: number; name: string }>(sql, [0])
+    expect(result).toStrictEqual({ id: 0, name: 'Evie Le' })
+  })
 })
 
 it('all api test', async () => {
@@ -92,7 +100,7 @@ it('transaction api test', async () => {
   const result = await dbo.get<{ count: number }>(
     'SELECT count(*) AS count FROM user'
   )
-  expect(result.count).toBe(len + 2)
+  expect(result?.count).toBe(len + 2)
 })
 
 it('vacuum api test', async () => {
