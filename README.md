@@ -159,12 +159,6 @@ Loads a compiled SQLite extension into the database connection object.
 
 Rebuild the database file, repacking it into a minimal amount of disk space.
 
-### `CheckIntegrity`
-
-- **Type:** `() => Promise<string>`
-
-Runs a self-check on the database structure. If no errors are found, the text value `ok` will be returned.
-
 ### `Escape`
 
 - **Type:** `(str: string) => string`

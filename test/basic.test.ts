@@ -102,11 +102,6 @@ it('vacuum api test', async () => {
   expect(fs.statSync(dbo.fileName).size).toBeLessThan(stat.size)
 })
 
-it('checkIntegrity api test', async () => {
-  const result = await dbo.checkIntegrity()
-  expect(result).toEqual('ok')
-})
-
 afterAll(async () => {
   await dbo.close()
 })
