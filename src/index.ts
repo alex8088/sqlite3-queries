@@ -138,6 +138,26 @@ export class Dbo {
   }
 
   /**
+   * Executes the PRAGMA command to modify the operation of the SQLite library or
+   * to query the library for internal (non-table) data.
+   *
+   * For example:
+   *
+   * ```js
+   * // query cache size
+   * dbo.pragma('cache_size')
+   * // change cache size
+   * dbo.pragma('cache_size', 1000 * 1024)
+   * ```
+   */
+  async pragma<T extends Record<string, any>>(
+    flag: string,
+    value?: string | number
+  ): Promise<T | undefined> {
+    return this.get<T>(`PRAGMA ${value ? [flag, value].join(' = ') : flag}`)
+  }
+
+  /**
    * Escape the `/`, `%`, and  `_` characters of query parameters.
    */
   escape(str: string): string {

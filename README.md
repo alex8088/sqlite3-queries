@@ -159,6 +159,22 @@ Loads a compiled SQLite extension into the database connection object.
 
 Rebuild the database file, repacking it into a minimal amount of disk space.
 
+### `Pragma`
+
+- **Type:** `<T extends Record<string, any>>(flag: string, value?: string | number): Promise<T | undefined>`
+
+Executes the PRAGMA command to modify the operation of the SQLite library or to query the library for internal (non-table) data.
+
+Example:
+
+```js
+// query cache size
+dbo.pragma('cache_size')
+
+// change cache size
+dbo.pragma('cache_size', 1000 * 1024)
+```
+
 ### `Escape`
 
 - **Type:** `(str: string) => string`

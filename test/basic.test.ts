@@ -110,6 +110,19 @@ it('vacuum api test', async () => {
   expect(fs.statSync(dbo.fileName).size).toBeLessThan(stat.size)
 })
 
+describe('pragma api test', () => {
+  it('query cache_size', async () => {
+    const result = await dbo.pragma<{ cache_size: string }>('cache_size')
+    expect(result?.cache_size).toEqual(-2000)
+  })
+  it('change cache_size', async () => {
+    await dbo.pragma('cache_size', 1000 * 1024)
+    const result = await dbo.pragma<{ cache_size: string }>('cache_size')
+    expect(result?.cache_size).toEqual(1000 * 1024)
+    await dbo.pragma('cache_size', -2000)
+  })
+})
+
 afterAll(async () => {
   await dbo.close()
 })
