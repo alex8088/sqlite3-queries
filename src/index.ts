@@ -2,14 +2,50 @@
 import { basename } from 'node:path'
 import sqlite3, { Database, Statement, verbose } from 'sqlite3'
 
-type SqliteErrorCallback = (err: Error | null) => void
+interface SqliteDatebaseOptions {
+  /**
+   * Sets the execution mode to verbose to produce long stack traces.
+   *
+   * Note that you shouldn't enable the verbose mode in a production setting as the
+   * performance penalty for collecting stack traces is quite high.
+   *
+   * @default false
+   */
+  verbose?: boolean
+  /**
+   * Enable trace logging for debugging. Set to `run` to emit whenever a query is run,
+   * or set to `finish` to emit whenever a query is finished.
+   *
+   * Note that finish mode will include the time it took to run (in milliseconds).
+   */
+  trace?: 'run' | 'finish'
+  /**
+   * Custom trace or error log output. Trace type logs are only output
+   * when the `trace` option is enabled.
+   * @param info Log information. See {@link SqliteLogInfo}.
+   */
+  log?: (info: SqliteLogInfo) => void
+}
 
-async function toPromise(
-  func: (cb: SqliteErrorCallback) => void
-): Promise<void> {
-  return new Promise((resolve, reject) =>
-    func((err) => (err ? reject(err) : resolve()))
-  )
+type SqliteFunction =
+  | 'open'
+  | 'close'
+  | 'loadExtension'
+  | 'exec'
+  | 'run'
+  | 'get'
+  | 'all'
+  | 'prepare'
+  | 'transaction'
+
+type SqliteCallback<T> = (err: Error | null, result?: T) => void
+
+type SqliteLogInfo = {
+  level: 'trace' | 'error'
+  channel?: SqliteFunction
+  sql?: string
+  time?: number
+  error?: Error
 }
 
 type RunResult = {
@@ -74,22 +110,40 @@ export class Dbo {
    * @param fileName Valid values are filenames, ":memory:" for an anonymous in-memory
    * database and an empty string for an anonymous disk-based database. Anonymous databases
    * are not persisted and when closing the database handle, their contents are lost.
-   * Default: `:memory:`
-   * @param verbose Sets the execution mode to verbose to produce long stack traces.
-   * Note that you shouldn't enable the verbose mode in a production setting as the
-   * performance penalty for collecting stack traces is quite high.
-   * Default: false
+   * Default: `:memory:`.
+   * @param options Sqlite database options. See {@link SqliteDatebaseOptions}.
    */
   constructor(
     public readonly fileName: string | ':memory:' = ':memory:',
-    public verbose = false
+    readonly options: SqliteDatebaseOptions = {}
   ) {
     this.name = basename(this.fileName)
     this.isInMemory = this.fileName === Dbo.IN_MEMORY_PATH
   }
 
+  private promisify<T>(
+    name: SqliteFunction,
+    fn: (cb: SqliteCallback<T>) => void,
+    sql?: string
+  ): Promise<T> {
+    return new Promise((resolve, reject) =>
+      fn((error, result) => {
+        if (error) {
+          this.log({ channel: name, error, sql })
+
+          reject(error)
+        }
+        resolve(result as T)
+      })
+    )
+  }
+
+  private log(info: Omit<SqliteLogInfo, 'level'>): void {
+    this.options.log?.({ level: info.error ? 'error' : 'trace', ...info })
+  }
+
   /**
-   * Open the database
+   * Open the database.
    * @param mode One or more of `Dbo.OPEN_READONLY`, `Dbo.OPEN_READWRITE`, `Dbo.OPEN_CREATE`,
    * `Dbo.OPEN_FULLMUTEX`, `Dbo.OPEN_URI`, `Dbo.OPEN_SHAREDCACHE`, `Dbo.OPEN_PRIVATECACHE`.
    * Default: `OPEN_READWRITE | OPEN_CREATE | OPEN_FULLMUTEX`.
@@ -97,18 +151,24 @@ export class Dbo {
   async open(
     mode: number = Dbo.OPEN_READWRITE | Dbo.OPEN_CREATE | Dbo.OPEN_FULLMUTEX
   ): Promise<void> {
-    return toPromise((cb) => {
-      this.db = this.verbose
+    return this.promisify('open', (cb) => {
+      this.db = this.options.verbose
         ? new (verbose().Database)(this.fileName, mode, cb)
         : new Database(this.fileName, mode, cb)
+      if (this.options.trace === 'run') {
+        this.db.on('trace', (sql) => this.log({ sql }))
+      }
+      if (this.options.trace === 'finish') {
+        this.db.on('profile', (sql, time) => this.log({ sql, time }))
+      }
     })
   }
 
   /**
-   * Close the database
+   * Close the database.
    */
   async close(): Promise<void> {
-    return toPromise((cb) =>
+    return this.promisify('close', (cb) =>
       this.db
         ? this.db.close((err) => {
             if (!err) {
@@ -125,7 +185,7 @@ export class Dbo {
    * @param fileName Filename of the extension to load
    */
   async loadExtension(fileName: string): Promise<void> {
-    return toPromise((cb) =>
+    return this.promisify('loadExtension', (cb) =>
       this.db ? this.db.loadExtension(fileName, cb) : cb(SqliteError.NOT_OPEN)
     )
   }
@@ -180,8 +240,12 @@ export class Dbo {
    * Runs all SQL queries in the supplied string.
    */
   exec(sql: string): Promise<void> {
-    return toPromise((cb) =>
-      this.db ? this.db.exec(sql, cb) : cb(SqliteError.NOT_OPEN)
+    return this.promisify(
+      'exec',
+      (cb) => {
+        this.db ? this.db.exec(sql, cb) : cb(SqliteError.NOT_OPEN)
+      },
+      sql
     )
   }
 
@@ -192,17 +256,17 @@ export class Dbo {
     sql: string,
     params: SqlQueryParam | (string | number)[] = []
   ): Promise<RunResult> {
-    return new Promise((resolve, reject) => {
-      this.db
-        ? this.db.run(sql, params, function (err) {
-            if (err) {
-              reject(err)
-            } else {
-              resolve({ lastId: this.lastID, changes: this.changes })
-            }
-          })
-        : reject(SqliteError.NOT_OPEN)
-    })
+    return this.promisify(
+      'run',
+      (cb) => {
+        this.db
+          ? this.db.run(sql, params, function (err) {
+              cb(err, { lastId: this.lastID, changes: this.changes })
+            })
+          : cb(SqliteError.NOT_OPEN)
+      },
+      sql
+    )
   }
 
   /**
@@ -213,17 +277,13 @@ export class Dbo {
     sql: string,
     params: SqlQueryParam | (string | number)[] = []
   ): Promise<T | undefined> {
-    return new Promise((resolve, reject) => {
-      this.db
-        ? this.db.get<T>(sql, params, (err, result?: T) => {
-            if (err) {
-              reject(err)
-            } else {
-              resolve(result)
-            }
-          })
-        : reject(SqliteError.NOT_OPEN)
-    })
+    return this.promisify(
+      'get',
+      (cb) => {
+        this.db ? this.db.get(sql, params, cb) : cb(SqliteError.NOT_OPEN)
+      },
+      sql
+    )
   }
 
   /**
@@ -234,17 +294,13 @@ export class Dbo {
     sql: string,
     params: SqlQueryParam | (string | number)[] = []
   ): Promise<T[]> {
-    return new Promise((resolve, reject) => {
-      this.db
-        ? this.db.all<T>(sql, params, (err, result) => {
-            if (err) {
-              reject(err)
-            } else {
-              resolve(result)
-            }
-          })
-        : reject(SqliteError.NOT_OPEN)
-    })
+    return this.promisify(
+      'all',
+      (cb) => {
+        this.db ? this.db.all(sql, params, cb) : cb(SqliteError.NOT_OPEN)
+      },
+      sql
+    )
   }
 
   /**
@@ -256,7 +312,11 @@ export class Dbo {
 
       runCallback(stmt)
 
-      stmt.finalize()
+      stmt.finalize((error) => {
+        if (error) {
+          this.log({ channel: 'prepare', error, sql })
+        }
+      })
     }
   }
 
@@ -268,24 +328,16 @@ export class Dbo {
    * ensure data integrity and to handle database errors.
    */
   async transaction(transactions: () => void): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.db) {
-        this.db.serialize(() => {
-          this.db!.run('BEGIN')
+    return this.promisify('transaction', (cb) => {
+      this.db
+        ? this.db.serialize(() => {
+            this.db!.run('BEGIN')
 
-          transactions()
+            transactions()
 
-          this.db!.run('COMMIT', (error) => {
-            if (error) {
-              return reject(error)
-            }
-
-            return resolve()
+            this.db!.run('COMMIT', cb)
           })
-        })
-      } else {
-        reject(SqliteError.NOT_OPEN)
-      }
+        : cb(SqliteError.NOT_OPEN)
     })
   }
 }
