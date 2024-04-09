@@ -214,7 +214,9 @@ export class Dbo {
     flag: string,
     value?: string | number
   ): Promise<T | undefined> {
-    return this.get<T>(`PRAGMA ${value ? [flag, value].join(' = ') : flag}`)
+    return this.get<T>(
+      `PRAGMA ${value !== undefined ? [flag, value].join(' = ') : flag}`
+    )
   }
 
   /**
