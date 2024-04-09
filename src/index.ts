@@ -90,6 +90,7 @@ export class Dbo {
   static OPEN_PRIVATECACHE = sqlite3.OPEN_PRIVATECACHE
 
   static readonly IN_MEMORY_PATH = ':memory:'
+  static readonly SQLITE_MAX_PARAMETERS = 256
 
   /**
    * Sqlite3 database.
