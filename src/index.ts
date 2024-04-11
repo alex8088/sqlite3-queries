@@ -344,3 +344,69 @@ export class Dbo {
     })
   }
 }
+
+/**
+ * Database migration describes.
+ */
+export type DbMigration = {
+  /**
+   * Migration version. The initial version must be greater than `0`. A new
+   * version is defined on each migration and is incremented on the previous version.
+   */
+  version: number
+  /**
+   * Migration SQLs. The sql will run sequentially, and DDL sql should
+   * be written before DML sql.
+   */
+  sqls: string[]
+}
+
+/**
+ * Database context base class. It has implemented automatic migration.
+ */
+export class DbContext {
+  /**
+   * Database context.
+   * @param dbo Database object.
+   * @param migrations Database migrations.
+   */
+  constructor(
+    public readonly dbo: Dbo,
+    public readonly migrations: DbMigration[]
+  ) {}
+
+  protected async migrate(): Promise<void> {
+    const version = await this.getVersion()
+    if (version >= 0) {
+      const migrations = this.migrations.filter((mgn) => mgn.version > version)
+      for (const mgn of migrations) {
+        const sql = mgn.sqls.join(';')
+        await this.dbo.exec(sql + `;PRAGMA user_version = ${mgn.version};`)
+      }
+    }
+  }
+
+  /**
+   * Get the database user_version.
+   */
+  async getVersion(): Promise<number> {
+    const uv = await this.dbo.pragma<{ user_version: number }>('user_version')
+    return uv ? uv.user_version : -1
+  }
+
+  /**
+   * Open the database and apply migrations automatically.
+   */
+  async open(): Promise<void> {
+    return this.dbo.open().then(() => {
+      return this.migrate()
+    })
+  }
+
+  /**
+   * Close the database.
+   */
+  async close(): Promise<void> {
+    return this.dbo.close()
+  }
+}

@@ -63,6 +63,87 @@ const dbo = new Dbo(Dbo.IN_MEMORY_PATH, {
 await dbo.open()
 ```
 
+### Automatic Migration
+
+```js
+import path from 'node:path'
+import { Dbo, DbContext, DbMigration } from 'sqlite3-queries'
+
+class UserContext extends DbContext {
+  constructor(fileName: string) {
+    const dbo = new Dbo(fileName)
+    super(dbo, UserContext.migrations)
+  }
+
+  static migrations: DbMigration[] = [
+    {
+      version: 1,
+      sqls: [
+        'CREATE TABLE IF NOT EXISTS users (id STRING PRIMARY KEY, name STRING)'
+      ]
+    },
+    {
+      version: 2,
+      sqls: ['ALTER TABLE users ADD COLUMN gender INTEGER DEFAULT (1)']
+    }
+  ]
+}
+
+const db = new UserContext(path.join(__dirname, 'test.db'))
+
+await db.open()
+```
+
+<details>
+<summary><b>Type Signature</b></summary>
+
+```ts
+/**
+ * Database migration describes.
+ */
+type DbMigration = {
+  /**
+   * Migration version. The initial version must be greater than `0`. A new
+   * version is defined on each migration and is incremented on the previous version.
+   */
+  version: number
+  /**
+   * Migration SQLs. The sql will run sequentially, and DDL sql should
+   * be written before DML sql.
+   */
+  sqls: string[]
+}
+
+/**
+ * Database context base class. It has implemented automatic migration.
+ */
+declare class DbContext {
+  readonly dbo: Dbo
+  readonly migrations: DbMigration[]
+  /**
+   * Database context.
+   * @param dbo Database object.
+   * @param migrations Database migrations.
+   */
+  constructor(dbo: Dbo, migrations: DbMigration[])
+  protected migrate(): Promise<void>
+  /**
+   * Get the database user_version.
+   */
+  getVersion(): Promise<number>
+  /**
+   * Open the database and apply migrations automatically.
+   */
+  open(): Promise<void>
+  /**
+   * Close the database.
+   */
+  close(): Promise<void>
+}
+```
+
+</details>
+
 ## APIs
 
 Promise-based APIs for sqlite3.
