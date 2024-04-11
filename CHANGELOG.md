@@ -1,3 +1,7 @@
+### v2.1.0 (_2024-04-11_)
+
+- feat: supports automatic migration
+
 ### v2.0.0 (_2024-04-10_)
 
 - feat: add prepare api
